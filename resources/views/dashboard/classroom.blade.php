@@ -101,9 +101,9 @@
         </div>
 
         @if($currentClassroom)
-            <!-- Banner Principal + KPIs Resumen -->
+            <!-- BANNER PRINCIPAL + KPIs RESUMEN (ESTRUCTURA CORREGIDA) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Banner del Salón Actual -->
+                <!-- Banner del Salón Actual (Ocupa 2 columnas) -->
                 <div class="lg:col-span-2 relative overflow-hidden bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl dark:shadow-2xl transition-colors duration-300">
                     <div class="absolute -top-20 -right-20 w-72 h-72 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-violet-500/10 dark:bg-violet-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -141,31 +141,38 @@
                     </div>
                 </div>
 
-                <!-- Tarjetas de Métricas Rápidas (KPIs) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    <!-- Promedio General -->
-                    <div class="group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-3xl p-6 backdrop-blur-2xl flex items-center justify-between shadow-xl transition-all duration-300 hover:translate-y-[-2px]">
+                <!-- COLUMNA DERECHA CON TARJETAS APILADAS (Ocupa 1 columna) -->
+                <div class="flex flex-col gap-4">
+                    <!-- Promedio General en Porcentaje -->
+                    <div class="flex-1 group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-3xl p-5 backdrop-blur-2xl flex items-center justify-between shadow-xl transition-all duration-300 hover:translate-y-[-2px]">
                         <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Promedio {{ ($currentCourse && !$isAllActive) ? 'Curso' : 'General' }}</p>
-                            <h4 class="text-3xl font-black text-slate-900 dark:text-white mt-1">
-                                {{ number_format(($courseStats['promedio'] ?? $promedioGeneral), 1) }} 
-                                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20 ml-1">Escala 0-20</span>
-                            </h4>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">Calificación media del aula</p>
+                            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Promedio {{ ($currentCourse && !$isAllActive) ? 'Curso' : 'General' }}</p>
+                            @php
+                                $notaVigesimal = $courseStats['promedio'] ?? $promedioGeneral;
+                                // Conversión a escala porcentaje 0-100%
+                                $porcentajePromedio = round(($notaVigesimal / 20) * 100, 1);
+                            @endphp
+                            <div class="flex items-center gap-2 mt-1">
+                                <h4 class="text-3xl font-black text-slate-900 dark:text-white">{{ $porcentajePromedio }}%</h4>
+                                <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20">
+                                    {{ number_format($notaVigesimal, 1) }} / 20
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">Rendimiento medio relativo del aula</p>
                         </div>
-                        <div class="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-lg shadow-indigo-500/10">
-                            <i class="fa-solid fa-chart-line"></i>
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-lg shadow-indigo-500/10 flex-shrink-0">
+                            <i class="fa-solid fa-percent"></i>
                         </div>
                     </div>
 
                     <!-- Tasa de Aprobación -->
-                    <div class="group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-emerald-500/50 rounded-3xl p-6 backdrop-blur-2xl flex items-center justify-between shadow-xl transition-all duration-300 hover:translate-y-[-2px]">
+                    <div class="flex-1 group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-emerald-500/50 rounded-3xl p-5 backdrop-blur-2xl flex items-center justify-between shadow-xl transition-all duration-300 hover:translate-y-[-2px]">
                         <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tasa de Aprobación</p>
+                            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tasa de Aprobación</p>
                             <h4 class="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{{ $courseStats['porcentaje_aprobados'] ?? $tasaAprobacion }}%</h4>
                             <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">Alumnos con nota &ge; 10.5</p>
                         </div>
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-lg shadow-emerald-500/10">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-lg shadow-emerald-500/10 flex-shrink-0">
                             <i class="fa-solid fa-user-check"></i>
                         </div>
                     </div>
@@ -389,7 +396,7 @@
         const studentItems = document.querySelectorAll('.student-item');
         const noResults = document.getElementById('noResults');
 
-        let selectedLetter = '';
+        let currentSelectedLetter = "";
 
         function filterStudents() {
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -400,14 +407,14 @@
                 const email = item.getAttribute('data-email') || '';
                 const initial = item.getAttribute('data-initial') || '';
 
-                const matchesText = name.includes(query) || email.includes(query);
-                const matchesLetter = selectedLetter === '' || initial === selectedLetter;
+                const matchesSearch = name.includes(query) || email.includes(query);
+                const matchesInitial = currentSelectedLetter === "" || initial === currentSelectedLetter;
 
-                if (matchesText && matchesLetter) {
-                    item.style.display = 'flex';
+                if (matchesSearch && matchesInitial) {
+                    item.classList.remove('hidden');
                     visibleCount++;
                 } else {
-                    item.style.display = 'none';
+                    item.classList.add('hidden');
                 }
             });
 
@@ -420,85 +427,66 @@
             }
         }
 
-        function updateActiveButton(letter) {
+        if (searchInput) {
+            searchInput.addEventListener('input', filterStudents);
+        }
+
+        if (initialFilter) {
+            initialFilter.addEventListener('change', function () {
+                currentSelectedLetter = this.value;
+                updateActiveLetterButtons(currentSelectedLetter);
+                filterStudents();
+            });
+        }
+
+        letterButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                currentSelectedLetter = this.getAttribute('data-letter') || "";
+                if (initialFilter) initialFilter.value = currentSelectedLetter;
+                updateActiveLetterButtons(currentSelectedLetter);
+                filterStudents();
+            });
+        });
+
+        function updateActiveLetterButtons(letter) {
             letterButtons.forEach(btn => {
-                const btnLetter = btn.getAttribute('data-letter');
+                const btnLetter = btn.getAttribute('data-letter') || "";
                 if (btnLetter === letter) {
-                    btn.className = "letter-btn bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shadow-sm";
+                    btn.className = "letter-btn active-letter bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shadow-sm";
                 } else {
                     btn.className = "letter-btn bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 transition-all";
                 }
             });
         }
 
-        if (searchInput) searchInput.addEventListener('input', filterStudents);
-
-        if (initialFilter) {
-            initialFilter.addEventListener('change', function () {
-                selectedLetter = this.value;
-                updateActiveButton(selectedLetter);
-                filterStudents();
-            });
-        }
-
-        letterButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                selectedLetter = this.getAttribute('data-letter');
-                if (initialFilter) initialFilter.value = selectedLetter;
-                updateActiveButton(selectedLetter);
-                filterStudents();
-            });
-        });
-
-        // 2. Toggle Modo Oscuro / Modo Claro
-        const themeBtn = document.getElementById('themeToggleBtn');
-        const themeIcon = document.getElementById('themeToggleIcon');
-        const themeText = document.getElementById('themeToggleText');
-
-        function updateThemeUI(isDark) {
-            if (themeIcon && themeText) {
-                if (isDark) {
-                    themeIcon.className = "fa-solid fa-sun text-amber-400 text-sm";
-                    themeText.textContent = "Modo Claro";
-                } else {
-                    themeIcon.className = "fa-solid fa-moon text-indigo-500 text-sm";
-                    themeText.textContent = "Modo Oscuro";
-                }
-            }
-        }
-
-        if (themeBtn) {
-            themeBtn.addEventListener('click', function () {
-                const isDark = document.documentElement.classList.toggle('dark');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                updateThemeUI(isDark);
-            });
-            updateThemeUI(document.documentElement.classList.contains('dark'));
-        }
-
-        // 3. Inicializar Gráfico estilo Trading (Evolución Mensual)
+        // 2. Gráfico Tipo Trading con Chart.js
         const ctx = document.getElementById('tradingTrendChart');
         if (ctx) {
-            let chartCtx = ctx.getContext('2d');
-            let gradient = chartCtx.createLinearGradient(0, 0, 0, 250);
-            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
 
-            new Chart(chartCtx, {
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: monthlyData.labels,
+                    labels: monthlyData.labels || ['Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre'],
                     datasets: [{
-                        label: 'Nota Promedio',
-                        data: monthlyData.data,
-                        borderColor: '#10b981',
+                        label: 'Promedio Mensual',
+                        data: monthlyData.data || [10.5, 11.2, 12.0, 11.8, 13.5, 14.0, 14.8],
+                        borderColor: '#6366f1',
                         borderWidth: 3,
-                        fill: true,
                         backgroundColor: gradient,
-                        tension: 0.35,
-                        pointBackgroundColor: '#10b981',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#818cf8',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
                         pointRadius: 5,
-                        pointHoverRadius: 8
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
@@ -508,57 +496,89 @@
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: '#0f172a',
-                            titleColor: '#fff',
-                            bodyColor: '#10b981',
-                            borderColor: '#1e293b',
-                            borderWidth: 1,
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            displayColors: false,
                             callbacks: {
-                                label: (context) => ` Nota Promedio: ${context.raw} / 20`
+                                label: function (context) {
+                                    return `Nota: ${context.raw} / 20`;
+                                }
                             }
                         }
                     },
                     scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
-                        y: { min: 0, max: 20, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8', stepSize: 4 } }
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 11, weight: '600' } }
+                        },
+                        y: {
+                            min: 0,
+                            max: 20,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 11, weight: '600' }, stepSize: 4 }
+                        }
                     }
                 }
             });
         }
+
+        // 3. Toggle de Tema Claro / Oscuro con Persistencia
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeToggleIcon');
+        const themeText = document.getElementById('themeToggleText');
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', function () {
+                const isDarkMode = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+                updateThemeUI(isDarkMode);
+            });
+        }
+
+        function updateThemeUI(isDark) {
+            if (themeIcon) {
+                themeIcon.className = isDark 
+                    ? 'fa-solid fa-sun text-amber-400 text-sm' 
+                    : 'fa-solid fa-moon text-indigo-500 text-sm';
+            }
+            if (themeText) {
+                themeText.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+            }
+        }
+
+        // Cargar preferencia guardada
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            updateThemeUI(true);
+        } else {
+            document.documentElement.classList.remove('dark');
+            updateThemeUI(false);
+        }
     });
 
-    // 4. Mostrar Resultados Dinámicos al Clic
+    // 4. Función global para alternar la visualización de notas de estudiantes
     function mostrarResultados() {
         const containers = document.querySelectorAll('.student-results-container');
         containers.forEach(container => {
-            container.classList.remove('hidden');
-
-            let n1 = Math.floor(Math.random() * (20 - 6 + 1)) + 6;
-            let n2 = Math.floor(Math.random() * (20 - 7 + 1)) + 7;
-            let n3 = Math.floor(Math.random() * (20 - 8 + 1)) + 8;
-            let avg = ((n1 + n2 + n3) / 3).toFixed(1);
-
-            let statusBadge = '';
-            if (avg >= 18.0) {
-                statusBadge = '<span class="px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">AD • Destacado</span>';
-            } else if (avg >= 14.0) {
-                statusBadge = '<span class="px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold">A • Esperado</span>';
-            } else if (avg >= 10.5) {
-                statusBadge = '<span class="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">B • En Proceso</span>';
-            } else {
-                statusBadge = '<span class="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-[10px] font-bold">C • En Inicio</span>';
+            const item = container.closest('.student-item');
+            if (item && !item.classList.contains('hidden')) {
+                if (container.classList.contains('hidden')) {
+                    // Generación simulada/dinámica de notas
+                    const randomScore = (Math.random() * 8 + 12).toFixed(1);
+                    const isApproved = randomScore >= 10.5;
+                    container.innerHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${isApproved ? 'bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400'}">
+                            <i class="fa-solid ${isApproved ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                            Nota: ${randomScore} / 20
+                        </span>
+                    `;
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
             }
-
-            let detail = isAllCourses 
-                ? `Mat: <strong>${n1}</strong> | Com: <strong>${n2}</strong> | C&T: <strong>${n3}</strong>` 
-                : `Comp. 1: <strong>${n1}</strong> | Comp. 2: <strong>${n2}</strong> | Comp. 3: <strong>${n3}</strong>`;
-
-            container.innerHTML = `
-                <div class="flex items-center gap-3 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span class="text-[11px]">${detail}</span>
-                    <span class="font-black text-slate-900 dark:text-white text-xs">Prom: ${avg}</span>
-                    ${statusBadge}
-                </div>
-            `;
         });
     }
 </script>

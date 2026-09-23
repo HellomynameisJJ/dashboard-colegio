@@ -32,7 +32,7 @@ class TungasucaDataSeeder extends Seeder
             'total_capacity' => 30,
         ]);
 
-        // 2. Crear Cursos y Competencias (incluyendo el campo 'code' en ambos)
+        // 2. Crear Cursos y Competencias
         $coursesData = [
             'MAT-101' => [
                 'name' => 'Matemática',
@@ -40,7 +40,8 @@ class TungasucaDataSeeder extends Seeder
                     'CMP-001' => 'Resuelve problemas de cantidad',
                     'CMP-002' => 'Resuelve problemas de regularidad, equivalencia y cambio',
                     'CMP-003' => 'Resuelve problemas de forma, movimiento y localización',
-                ]
+                ],
+                'score_range' => [950, 1600] // Rango de notas: 9.50 a 16.00
             ],
             'COM-101' => [
                 'name' => 'Comunicación',
@@ -48,18 +49,21 @@ class TungasucaDataSeeder extends Seeder
                     'CMP-004' => 'Se comunica oralmente en su lengua materna',
                     'CMP-005' => 'Lee diversos tipos de textos escritos',
                     'CMP-006' => 'Escribe diversos tipos de textos',
-                ]
+                ],
+                'score_range' => [1250, 1850] // Rango de notas: 12.50 a 18.50
             ],
             'CTA-101' => [
                 'name' => 'Ciencia y Tecnología',
                 'competencies' => [
                     'CMP-007' => 'Indaga mediante métodos científicos para construir conocimientos',
                     'CMP-008' => 'Explica el mundo físico basándose en conocimientos científicos',
-                ]
+                    'CMP-009' => 'Diseña y construye soluciones tecnológicas para resolver problemas',
+                ],
+                'score_range' => [1050, 1680] // Rango de notas: 10.50 a 16.80
             ],
         ];
 
-        $competenciesList = [];
+        $courseCompetenciesMap = [];
 
         foreach ($coursesData as $courseCode => $courseInfo) {
             $course = Course::create([
@@ -67,12 +71,19 @@ class TungasucaDataSeeder extends Seeder
                 'name' => $courseInfo['name'],
             ]);
 
+            $courseCompetenciesMap[$course->id] = [
+                'range' => $courseInfo['score_range'],
+                'competencies' => []
+            ];
+
             foreach ($courseInfo['competencies'] as $compCode => $compName) {
-                $competenciesList[] = Competency::create([
+                $comp = Competency::create([
                     'code' => $compCode,
                     'course_id' => $course->id,
                     'name' => $compName,
                 ]);
+
+                $courseCompetenciesMap[$course->id]['competencies'][] = $comp;
             }
         }
 
@@ -80,13 +91,11 @@ class TungasucaDataSeeder extends Seeder
         for ($i = 1; $i <= 28; $i++) {
             $num = str_pad($i, 3, '0', STR_PAD_LEFT);
 
-            // Generar Nombre y Apellidos reales automatizados
             $firstName = $faker->firstName();
             $lastName1 = $faker->lastName();
             $lastName2 = $faker->lastName();
             $fullName = "{$firstName} {$lastName1} {$lastName2}";
 
-            // Correo dinámico basado en su nombre real
             $cleanName = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $firstName));
             $cleanLastName = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $lastName1));
             $email = "{$cleanName}.{$cleanLastName}@tungasuca.edu.pe";
@@ -98,13 +107,18 @@ class TungasucaDataSeeder extends Seeder
                 'classroom_id' => $classroomA->id,
             ]);
 
-            // Asignar puntajes aleatorios a cada competencia
-            foreach ($competenciesList as $competency) {
-                StudentCompetencyResult::create([
-                    'student_id' => $student->id,
-                    'competency_id' => $competency->id,
-                    'score' => rand(4500, 10000) / 100,
-                ]);
+            // Asignar puntajes REALES en escala vigesimal (0-20) variando por cada curso
+            foreach ($courseCompetenciesMap as $courseId => $info) {
+                $min = $info['range'][0];
+                $max = $info['range'][1];
+
+                foreach ($info['competencies'] as $competency) {
+                    StudentCompetencyResult::create([
+                        'student_id' => $student->id,
+                        'competency_id' => $competency->id,
+                        'score' => rand($min, $max) / 100, // Genera notas decimales dentro del rango vigesimal real
+                    ]);
+                }
             }
         }
 
@@ -112,13 +126,11 @@ class TungasucaDataSeeder extends Seeder
         for ($i = 1; $i <= 30; $i++) {
             $num = str_pad($i, 3, '0', STR_PAD_LEFT);
 
-            // Generar Nombre y Apellidos reales automatizados
             $firstName = $faker->firstName();
             $lastName1 = $faker->lastName();
             $lastName2 = $faker->lastName();
             $fullName = "{$firstName} {$lastName1} {$lastName2}";
 
-            // Correo dinámico
             $cleanName = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $firstName));
             $cleanLastName = strtolower(preg_replace('/[^A-Za-z0-9]/', '', $lastName1));
             $email = "{$cleanName}.{$cleanLastName}@tungasuca.edu.pe";
@@ -130,13 +142,17 @@ class TungasucaDataSeeder extends Seeder
                 'classroom_id' => $classroomB->id,
             ]);
 
-            // Asignar puntajes aleatorios a cada competencia
-            foreach ($competenciesList as $competency) {
-                StudentCompetencyResult::create([
-                    'student_id' => $student->id,
-                    'competency_id' => $competency->id,
-                    'score' => rand(4500, 10000) / 100,
-                ]);
+            foreach ($courseCompetenciesMap as $courseId => $info) {
+                $min = $info['range'][0];
+                $max = $info['range'][1];
+
+                foreach ($info['competencies'] as $competency) {
+                    StudentCompetencyResult::create([
+                        'student_id' => $student->id,
+                        'competency_id' => $competency->id,
+                        'score' => rand($min, $max) / 100,
+                    ]);
+                }
             }
         }
     }
