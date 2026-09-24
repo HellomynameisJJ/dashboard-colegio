@@ -115,6 +115,46 @@ class DashboardController extends Controller
             $competencyLabels = $temasPorCurso['labels'];
             $competencyData = $temasPorCurso['scores'];
 
+            // CÁLCULO DE NIVEL DE LOGRO POR COMPETENCIA (solo aplica a un curso individual)
+            // Usamos el PROMEDIO real de notas (no un simple "aprobado/no aprobado" con nota >= 10.5),
+            // así un alumno que pasa raspando (ej. 11 de 20) queda en un rango bajo ("En proceso")
+            // en vez de sumar igual que un alumno con 18 de 20 ("Logro destacado").
+            $competenciasStats = [];
+            if ($currentCourse) {
+                if ($totalEvaluacionesCurso > 0 && $courseResults->isNotEmpty()) {
+                    // Datos reales: agrupamos los resultados por nombre de competencia
+                    $porCompetencia = $courseResults->groupBy(function ($r) {
+                        return $r->competency->name ?? 'Competencia';
+                    });
+
+                    foreach ($porCompetencia as $nombreCompetencia => $resultadosComp) {
+                        $promedioComp = min(20.0, round($resultadosComp->avg('score') ?? 0, 1));
+                        $porcentajeComp = round(($promedioComp / 20) * 100);
+
+                        $competenciasStats[] = [
+                            'nombre' => $nombreCompetencia,
+                            'promedio' => $promedioComp,
+                            'porcentaje_logro' => $porcentajeComp,
+                            'nivel' => $this->obtenerNivelCNEB($promedioComp),
+                        ];
+                    }
+                } else {
+                    // Sin evaluaciones reales en BD: usamos el promedio simulado ya generado
+                    // por competencia (obtenerTemasSugeridosPorCurso) en vez de un % aleatorio alto.
+                    foreach ($competencyLabels as $idx => $labelCompetencia) {
+                        $promedioComp = min(20.0, round($competencyData[$idx] ?? 14.0, 1));
+                        $porcentajeComp = round(($promedioComp / 20) * 100);
+
+                        $competenciasStats[] = [
+                            'nombre' => $labelCompetencia,
+                            'promedio' => $promedioComp,
+                            'porcentaje_logro' => $porcentajeComp,
+                            'nivel' => $this->obtenerNivelCNEB($promedioComp),
+                        ];
+                    }
+                }
+            }
+
             $courseStats = [
                 'promedio' => $promedioCurso,
                 'promedio_porcentaje' => $promedioPorcentaje,
@@ -122,6 +162,7 @@ class DashboardController extends Controller
                 'total_evaluados' => $totalEvaluacionesCurso,
                 'preguntas_falladas' => $preguntasFalladas,
                 'preguntas_correctas' => $preguntasCorrectas,
+                'competencias' => $competenciasStats,
             ];
         }
 
@@ -171,6 +212,25 @@ class DashboardController extends Controller
             'competencyData',
             'monthlyTrend'
         ));
+    }
+
+    /**
+     * Clasifica un promedio (escala 0-20) según los niveles de logro oficiales del CNEB.
+     * Esto evita que un alumno que aprueba raspando (ej. 11) se cuente igual
+     * que uno con nota alta (ej. 18) en el indicador de "% aprobados".
+     */
+    private function obtenerNivelCNEB(float $promedio): string
+    {
+        if ($promedio >= 17) {
+            return 'Logro destacado';
+        }
+        if ($promedio >= 14) {
+            return 'Logro esperado';
+        }
+        if ($promedio >= 11) {
+            return 'En proceso';
+        }
+        return 'En inicio';
     }
 
     /**

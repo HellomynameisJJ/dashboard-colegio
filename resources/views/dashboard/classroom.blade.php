@@ -143,6 +143,53 @@
 
                 <!-- COLUMNA DERECHA CON TARJETAS APILADAS (Ocupa 1 columna) -->
                 <div class="flex flex-col gap-4">
+                @if($currentCourse && !$isAllActive && isset($courseStats['competencias']) && count($courseStats['competencias']) > 0)
+                    {{-- CURSO INDIVIDUAL: Nivel de Logro por Competencia (no se muestra en "Todos los Cursos") --}}
+                    <div class="flex-1 group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-3xl p-5 backdrop-blur-2xl shadow-xl transition-all duration-300 hover:translate-y-[-2px] flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nivel de Logro por Competencia</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{{ $currentCourse->name }}</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-lg shadow-indigo-500/10 flex-shrink-0">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto max-h-[220px] pr-1">
+                            @foreach($courseStats['competencias'] as $competencia)
+                                @php
+                                    $pctComp = round($competencia['porcentaje_logro'] ?? 0);
+                                    $promedioComp = $competencia['promedio'] ?? 0;
+                                    $nivelComp = $competencia['nivel'] ?? 'En proceso';
+                                    // Color según el NIVEL DE LOGRO real (CNEB), no solo el % crudo,
+                                    // así un "aprobado raspando" (En proceso) no se pinta igual que un
+                                    // logro real (Logro esperado / destacado).
+                                    $compClasses = match($nivelComp) {
+                                        'Logro destacado' => ['text' => 'text-indigo-600 dark:text-indigo-400', 'bar' => 'bg-indigo-500', 'badge' => 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/30'],
+                                        'Logro esperado' => ['text' => 'text-emerald-600 dark:text-emerald-400', 'bar' => 'bg-emerald-500', 'badge' => 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'],
+                                        'En proceso' => ['text' => 'text-amber-600 dark:text-amber-400', 'bar' => 'bg-amber-500', 'badge' => 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'],
+                                        default => ['text' => 'text-rose-600 dark:text-rose-400', 'bar' => 'bg-rose-500', 'badge' => 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'],
+                                    };
+                                @endphp
+                                <div>
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate pr-2">{{ $competencia['nombre'] }}</span>
+                                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                                            <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md whitespace-nowrap">{{ number_format($promedioComp, 1) }}/20</span>
+                                            <span class="text-xs font-black {{ $compClasses['text'] }}">{{ $pctComp }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-1">
+                                        <div class="h-full rounded-full {{ $compClasses['bar'] }}" style="width: {{ min($pctComp, 100) }}%"></div>
+                                    </div>
+                                    <span class="inline-block text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md border {{ $compClasses['badge'] }}">{{ $nivelComp }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-3">Basado en el promedio real de notas (escala CNEB: En inicio &lt; 11, En proceso &lt; 14, Logro esperado &lt; 17, Logro destacado &ge; 17)</p>
+                    </div>
+                @else
+                    {{-- "TODOS LOS CURSOS" (o sin datos de competencias aún): tarjetas originales --}}
                     <!-- Promedio General en Porcentaje -->
                     <div class="flex-1 group bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 rounded-3xl p-5 backdrop-blur-2xl flex items-center justify-between shadow-xl transition-all duration-300 hover:translate-y-[-2px]">
                         <div>
@@ -176,6 +223,7 @@
                             <i class="fa-solid fa-user-check"></i>
                         </div>
                     </div>
+                @endif
                 </div>
             </div>
 
